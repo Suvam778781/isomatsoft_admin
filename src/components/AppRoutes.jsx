@@ -8,15 +8,16 @@ import FooterSection from './FooterSection';
 import HeaderSection from './HeaderSection';
 import Carousel from './CarouselSection';
 import Login from './Login';
+import PrivateRoute from './PrivateRoute';
 const AppRoutes = () => {
   return (
  
       <Routes>
-        <Route path="/" element={<AboutUs />} />
-        <Route path="/hero" element={<HeroSection />} />
-        <Route path="/footer" element={<FooterSection />} />
-        <Route path="/header" element={<HeaderSection />} />
-        <Route path="/carousel" element={<Carousel />} />
+        <Route path="/" element={<PrivateRoute><AboutUs /></PrivateRoute>} />
+        <Route path="/hero" element={<PrivateRoute><HeroSection /></PrivateRoute>} />
+        <Route path="/footer" element={<PrivateRoute><FooterSection /></PrivateRoute>} />
+        <Route path="/header" element={<PrivateRoute><HeaderSection /></PrivateRoute>} />
+        <Route path="/carousel" element={<PrivateRoute><Carousel /></PrivateRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound/>} />
       </Routes>

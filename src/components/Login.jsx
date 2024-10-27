@@ -14,7 +14,7 @@ import {
   useToast,
   Spinner,
 } from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const formWidth = useBreakpointValue({ base: '90%', md: '500px' });
@@ -25,9 +25,16 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const staticUsername = 'user123'; // Static username
-  const staticPassword = 'pass123'; // Static password
-  const navigate=useNavigate()
+  const isAuth = localStorage.getItem('isAuth') === 'true';
+
+  if (isAuth) {
+    return <Navigate to="/" replace />;
+  }
+
+  const staticUsername = 'isomat_panel'; // Static username
+  const staticPassword = 'TonyPanel@78173832!23'; // Static password
+  const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -57,16 +64,16 @@ const Login = () => {
 
     // On successful login
     toast({
-        title: 'Login Successful!',
-        description: 'You have logged in successfully.',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
+      title: 'Login Successful!',
+      description: 'You have logged in successfully.',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
     });
-    navigate("/")
+    localStorage.setItem('isAuth', 'true'); // Store isAuth in localStorage
+    navigate("/");
     setLoading(false);
     console.log('Logged in successfully!');
-    // Proceed with redirection or further actions here
   };
 
   return (

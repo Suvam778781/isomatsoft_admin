@@ -20,6 +20,7 @@ import { fetchGetRequest, sendPostRequest } from "../api/api";
 const HeroSection = () => {
   const [heroData, setHeroData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [uploadImageLoading, setUploadImageLoading] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -28,7 +29,7 @@ const HeroSection = () => {
 
   const fetchHeroData = async () => {
     try {
-      const response = await fetchGetRequest("http://localhost:8091/api/getData?section=hero_section");
+      const response = await fetchGetRequest(`${import.meta.env.VITE_API_URL}/api/getData?section=hero_section`);
       setHeroData(response.data);
       setLoading(false);
     } catch (error) {
@@ -42,13 +43,50 @@ const HeroSection = () => {
     }
   };
 
+  const handleImageUpload = async (file) => {
+    setUploadImageLoading(true);
+    const formData = new FormData();
+    formData.append("post_img", file);
+
+    try {
+      const response = await sendPostRequest(`${import.meta.env.VITE_API_URL}/api/get-image-url`, formData);
+      if (response.url) {
+        toast({
+          title: "Image uploaded successfully",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+        });
+
+        setHeroData((prev) => ({ ...prev, image: response.url }));
+        setUploadImageLoading(false);
+
+        // Save updated hero data with new image URL
+        await handleUpdate();
+      }
+    } catch (error) {
+      toast({
+        title: "Error uploading image",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      });
+      setUploadImageLoading(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) handleImageUpload(file);
+  };
+
   const handleUpdate = async () => {
     try {
       const updatedData = {
         section: "hero_section",
         data: heroData,
       };
-      await sendPostRequest(`http://localhost:8091/api/updateData/${heroData._id.$oid}`, updatedData);
+      await sendPostRequest(`${import.meta.env.VITE_API_URL}/api/updateData`, updatedData);
       toast({
         title: "Hero Section updated successfully",
         status: "success",
@@ -74,7 +112,7 @@ const HeroSection = () => {
   }
 
   return (
-    <Box  mx="auto" py={8} px={4} bg="gray.50" borderRadius="lg" >
+    <Box mx="auto" py={8} px={4} bg="gray.50" borderRadius="lg">
       <Text fontSize="3xl" fontWeight="bold" mb={8} textAlign="center">
         Hero Section Management
       </Text>
@@ -115,22 +153,21 @@ const HeroSection = () => {
         />
       </FormControl>
 
-      {/* Image URL */}
+      {/* Image Upload */}
       <FormControl mb={4}>
-        <FormLabel fontWeight="bold">Hero Image URL</FormLabel>
-        <Flex className="">
-        <Image
-          src={heroData.image}
-          alt="Hero"
-          borderRadius="md"
-          mb={4}
-        />
-        </Flex>
+        <FormLabel fontWeight="bold">Hero Image</FormLabel>
+        {heroData.image && (
+          <Image src={heroData.image} alt="Hero" borderRadius="md" mb={4} />
+        )}
         <Input
-          value={heroData.image}
-          onChange={(e) => setHeroData({ ...heroData, image: e.target.value })}
+          type="file"
+          accept="image/*"
+
+          onChange={handleFileChange}
+          disabled={uploadImageLoading}
           border="1px solid"
           borderColor="gray.300"
+          height={12}
           p={2}
         />
       </FormControl>

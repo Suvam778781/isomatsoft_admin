@@ -8,17 +8,17 @@ import {
   FormControl,
   FormLabel,
   Text,
-  Stack,
   Grid,
-  Flex,
   GridItem,
   Divider,
+  Flex,
 } from "@chakra-ui/react";
 import { fetchGetRequest, sendPostRequest } from "../api/api";
 
 const FooterSection = () => {
   const [footerData, setFooterData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [uploadImageLoading, setUploadImageLoading] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const FooterSection = () => {
 
   const fetchFooterData = async () => {
     try {
-      const response = await fetchGetRequest("http://localhost:8091/api/getData?section=footer");
+      const response = await fetchGetRequest(`${import.meta.env.VITE_API_URL}/api/getData?section=footer`);
       setFooterData(response.data);
       setLoading(false);
     } catch (error) {
@@ -47,7 +47,7 @@ const FooterSection = () => {
         section: "footer",
         data: footerData,
       };
-      await sendPostRequest(`http://localhost:8091/api/updateData/${footerData._id.$oid}`, updatedData);
+      await sendPostRequest(`${import.meta.env.VITE_API_URL}/api/updateData/${footerData._id.$oid}`, updatedData);
       toast({
         title: "Footer Section updated successfully",
         status: "success",
@@ -61,6 +61,44 @@ const FooterSection = () => {
         duration: 2000,
         isClosable: true,
       });
+    }
+  };
+
+  const handleImageUpload = async (file, index, type) => {
+    setUploadImageLoading(true);
+    const formData = new FormData();
+    formData.append("post_img", file);
+    try {
+      const response = await sendPostRequest(`${import.meta.env.VITE_API_URL}/api/get-image-url`, formData);
+      if (response.url) {
+        toast({
+          title: "Image uploaded successfully",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+        });
+        const newFooterData = { ...footerData };
+        if (type === "social") newFooterData.social_media[index].icon = response.url;
+        else if (type === "link") newFooterData.links[index].icon = response.url;
+
+        setFooterData(newFooterData);
+      }
+    } catch (error) {
+      toast({
+        title: "Error uploading image",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      });
+    } finally {
+      setUploadImageLoading(false);
+    }
+  };
+
+  const handleFileChange = (event, index, type) => {
+    const file = event.target.files[0];
+    if (file) {
+      handleImageUpload(file, index, type);
     }
   };
 
@@ -113,14 +151,18 @@ const FooterSection = () => {
               <FormLabel fontWeight="bold">Icon URL</FormLabel>
               <Input
                 value={social.icon}
-                onChange={(e) => {
-                  const newSocialMedia = [...footerData.social_media];
-                  newSocialMedia[index].icon = e.target.value;
-                  setFooterData({ ...footerData, social_media: newSocialMedia });
-                }}
+                isReadOnly
                 border="1px solid"
                 borderColor="gray.300"
                 p={2}
+              />
+            </FormControl>
+            <FormControl mb={2}>
+              <FormLabel fontWeight="bold">Upload Icon</FormLabel>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, index, "social")}
               />
             </FormControl>
           </GridItem>
@@ -166,14 +208,18 @@ const FooterSection = () => {
               <FormLabel fontWeight="bold">Icon URL</FormLabel>
               <Input
                 value={link.icon}
-                onChange={(e) => {
-                  const newLinks = [...footerData.links];
-                  newLinks[index].icon = e.target.value;
-                  setFooterData({ ...footerData, links: newLinks });
-                }}
+                isReadOnly
                 border="1px solid"
                 borderColor="gray.300"
                 p={2}
+              />
+            </FormControl>
+            <FormControl mb={2}>
+              <FormLabel fontWeight="bold">Upload Icon</FormLabel>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, index, "link")}
               />
             </FormControl>
           </GridItem>
@@ -182,7 +228,7 @@ const FooterSection = () => {
 
       <Divider my={4} />
 
-      <Button onClick={handleUpdate} colorScheme="teal" isFullWidth>
+      <Button onClick={handleUpdate} colorScheme="teal" isFullWidth isLoading={uploadImageLoading}>
         Update
       </Button>
     </Box>

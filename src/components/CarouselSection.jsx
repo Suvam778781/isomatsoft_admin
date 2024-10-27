@@ -33,7 +33,7 @@ const Carousel = () => {
   const fetchCarouselData = async () => {
     setLoading(true);
     try {
-      const response = await fetchGetRequest(`http://localhost:8091/api/getData?section=carausel`);
+      const response = await fetchGetRequest(`${import.meta.env.VITE_API_URL}/api/getData?section=carausel`);
       setCarouselData(response.data);
       setLoading(false);
     } catch (error) {
@@ -58,7 +58,7 @@ const Carousel = () => {
     const formData = new FormData();
     formData.append("post_img", file);
     try {
-      const response = await sendPostRequest(`https://api.isomatsoft.com/api/payment/image-url`, formData);
+      const response = await sendPostRequest(`${import.meta.env.VITE_API_URL}/api/get-image-url`, formData);
       if (response.url) {
         toast({
           title: "Image uploaded successfully",
@@ -90,12 +90,13 @@ const Carousel = () => {
   };
 
   const handleUpdate = async (updatedItem) => {
+    setUpdatingItemId(updatedItem._id)
     try {
       const updatedData = {
         section: "carausel",
         data: updatedItem,
       };
-      await sendPostRequest(`http://localhost:8091/api/updateData`, updatedData);
+      await sendPostRequest(`${import.meta.env.VITE_API_URL}/api/updateData`, updatedData);
       toast({
         title: "Carousel updated successfully",
         status: "success",
@@ -103,6 +104,7 @@ const Carousel = () => {
         isClosable: true,
       });
     } catch (error) {
+
       toast({
         title: "Error updating carousel",
         status: "error",
@@ -111,7 +113,6 @@ const Carousel = () => {
       });
     }
   };
-
   return (
     <Box maxW="100%" mx="auto" py={4} px={4}  borderRadius="lg" >
       <Text fontSize="3xl" fontWeight="bold" mb={2} textAlign="center">
@@ -205,7 +206,7 @@ const Carousel = () => {
                 onClick={() => handleUpdate(item)}
                 colorScheme="teal"
                 isFullWidth
-                isLoading={uploadImageLoading && updatingItemId === item._id.$oid}
+                isLoading={uploadImageLoading && updatingItemId === item._id}
               >
                 Update
               </Button>

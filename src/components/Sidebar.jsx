@@ -13,11 +13,19 @@ import {
   DrawerCloseButton,
   IconButton,
 } from '@chakra-ui/react';
-import { FaHome, FaStar, FaImages, FaInfoCircle, FaCog, FaSignInAlt } from 'react-icons/fa';
+import { FaHome, FaStar, FaImages, FaInfoCircle, FaCog, FaSignInAlt, FaSignOutAlt } from 'react-icons/fa';
 import { GiHamburgerMenu } from 'react-icons/gi';
+import { useNavigate } from 'react-router-dom';
 
 const Sidebar = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const navigate = useNavigate();
+  const isAuth = localStorage.getItem('isAuth') === 'true';
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAuth'); // Remove authentication status
+    navigate('/login'); // Redirect to login page
+  };
 
   return (
     <>
@@ -58,10 +66,19 @@ const Sidebar = () => {
                 <Icon as={FaCog} w={5} h={5} />
                 <Text ml={2}>Footer</Text>
               </Link>
-              <Link display="flex" alignItems="center" p={2} borderRadius="md" _hover={{ bg: 'gray.100' }} href="/login">
-                <Icon as={FaSignInAlt} w={5} h={5} />
-                <Text ml={2}>Login</Text>
-              </Link>
+
+              {/* Conditional Login/Logout Button */}
+              {isAuth ? (
+                <Link display="flex" alignItems="center" p={2} borderRadius="md" _hover={{ bg: 'gray.100' }} onClick={handleLogout}>
+                  <Icon as={FaSignOutAlt} w={5} h={5} />
+                  <Text ml={2}>Logout</Text>
+                </Link>
+              ) : (
+                <Link display="flex" alignItems="center" p={2} borderRadius="md" _hover={{ bg: 'gray.100' }} href="/login">
+                  <Icon as={FaSignInAlt} w={5} h={5} />
+                  <Text ml={2}>Login</Text>
+                </Link>
+              )}
             </VStack>
           </DrawerBody>
         </DrawerContent>

@@ -18,6 +18,7 @@ import { fetchGetRequest, sendPostRequest } from "../api/api";
 const HeaderSection = () => {
   const [headerData, setHeaderData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [uploadLoading, setUploadLoading] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -26,7 +27,7 @@ const HeaderSection = () => {
 
   const fetchHeaderData = async () => {
     try {
-      const response = await fetchGetRequest("http://localhost:8091/api/getData?section=header");
+      const response = await fetchGetRequest(`${import.meta.env.VITE_API_URL}/api/getData?section=header`);
       setHeaderData(response.data);
       setLoading(false);
     } catch (error) {
@@ -40,13 +41,46 @@ const HeaderSection = () => {
     }
   };
 
+  const handleImageUpload = async (file, type) => {
+    setUploadLoading(true);
+    const formData = new FormData();
+    formData.append("post_img", file);
+
+    try {
+      const response = await sendPostRequest(`${import.meta.env.VITE_API_URL}/api/get-image-url`, formData);
+      if (response.url) {
+        toast({
+          title: "Image uploaded successfully",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+        });
+
+        if (type === "logo") {
+          setHeaderData({ ...headerData, logo: response.url });
+        } else if (type === "favicon") {
+          setHeaderData({ ...headerData, favicon: response.url });
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Error uploading image",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      });
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
   const handleUpdate = async () => {
     try {
       const updatedData = {
         section: "header",
         data: headerData,
       };
-      await sendPostRequest(`http://localhost:8091/api/updateData/${headerData._id.$oid}`, updatedData);
+      await sendPostRequest(`${import.meta.env.VITE_API_URL}/api/updateData`, updatedData);
       toast({
         title: "Header Section updated successfully",
         status: "success",
@@ -72,28 +106,47 @@ const HeaderSection = () => {
   }
 
   return (
-    <Box maxW="1200px" mx="auto" py={8} px={4} bg="gray.50" borderRadius="lg" >
+    <Box maxW="1200px" mx="auto" py={8} px={4} bg="gray.50" borderRadius="lg">
       <Text fontSize="3xl" fontWeight="bold" mb={8} textAlign="center">
         Header Section Management
       </Text>
-      {/* Logo */}
+
+      {/* Logo Upload */}
       <FormControl mb={4}>
-        <FormLabel fontWeight="bold">Logo URL</FormLabel>
+        <FormLabel fontWeight="bold">Logo</FormLabel>
+        <Input
+          type="file"
+          onChange={(e) => handleImageUpload(e.target.files[0], "logo")}
+          mb={2}
+          isDisabled={uploadLoading}
+          height={12}
+          p={2}
+        />
         <Input
           value={headerData.logo}
           onChange={(e) => setHeaderData({ ...headerData, logo: e.target.value })}
+          placeholder="Logo URL"
           border="1px solid"
           borderColor="gray.300"
           p={2}
         />
       </FormControl>
 
-      {/* Favicon */}
+      {/* Favicon Upload */}
       <FormControl mb={4}>
-        <FormLabel fontWeight="bold">Favicon URL</FormLabel>
+        <FormLabel fontWeight="bold">Favicon</FormLabel>
+        <Input
+          type="file"
+          onChange={(e) => handleImageUpload(e.target.files[0], "favicon")}
+          mb={2}
+          isDisabled={uploadLoading}
+          height={12}
+          p={2}
+        />
         <Input
           value={headerData.favicon}
           onChange={(e) => setHeaderData({ ...headerData, favicon: e.target.value })}
+          placeholder="Favicon URL"
           border="1px solid"
           borderColor="gray.300"
           p={2}
@@ -151,7 +204,7 @@ const HeaderSection = () => {
         ))}
       </Grid>
       <Divider my={4} />
-      <Button onClick={handleUpdate} colorScheme="teal" isFullWidth>
+      <Button onClick={handleUpdate} colorScheme="teal" isFullWidth isLoading={uploadLoading}>
         Update Header
       </Button>
     </Box>

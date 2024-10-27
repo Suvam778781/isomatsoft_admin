@@ -19,6 +19,7 @@ import { fetchGetRequest, sendPostRequest } from "../api/api";
 const AboutUs = () => {
   const [aboutData, setAboutData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [uploadImageLoading, setUploadImageLoading] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -27,7 +28,7 @@ const AboutUs = () => {
 
   const fetchAboutData = async () => {
     try {
-      const response = await fetchGetRequest("http://localhost:8091/api/getData?section=aboutus");
+      const response = await fetchGetRequest(`${import.meta.env.VITE_API_URL}/api/getData?section=aboutus`);
       setAboutData(response.data);
       setLoading(false);
     } catch (error) {
@@ -47,7 +48,7 @@ const AboutUs = () => {
         section: "aboutus",
         data: aboutData[index],
       };
-      await sendPostRequest(`http://localhost:8091/api/updateData/${aboutData[index]._id.$oid}`, updatedData);
+      await sendPostRequest(`${import.meta.env.VITE_API_URL}/api/updateData`, updatedData);
       toast({
         title: "About Us updated successfully",
         status: "success",
@@ -61,6 +62,45 @@ const AboutUs = () => {
         duration: 2000,
         isClosable: true,
       });
+    }
+  };
+
+  const handleImageUpload = async (file, index, type) => {
+    setUploadImageLoading(true);
+    const formData = new FormData();
+    formData.append("post_img", file);
+    try {
+      const response = await sendPostRequest(`${import.meta.env.VITE_API_URL}/api/get-image-url`, formData);
+      if (response.url) {
+        toast({
+          title: "Image uploaded successfully",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+        });
+        const newData = [...aboutData];
+        if (type === "logo") newData[index].logo = response.url;
+        else if (type === "icon") newData[index].icon = response.url; // Update for icon URL
+
+        setAboutData(newData);
+        await handleUpdate(index); // Update the data after setting the image URL
+      }
+    } catch (error) {
+      toast({
+        title: "Error uploading image",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      });
+    } finally {
+      setUploadImageLoading(false);
+    }
+  };
+
+  const handleFileChange = (event, index, type) => {
+    const file = event.target.files[0];
+    if (file) {
+      handleImageUpload(file, index, type);
     }
   };
 
@@ -78,8 +118,8 @@ const AboutUs = () => {
         About Us Management
       </Text>
 
-      {aboutData.map((about, index) => (
-        <Box key={about._id.$oid} mb={6} p={4} bg="white" borderRadius="md" >
+      {aboutData&&aboutData.map((about, index) => (
+        <Box key={about._id.$oid} mb={6} p={4} bg="white" borderRadius="md">
           {/* Title */}
           <FormControl mb={4}>
             <FormLabel fontWeight="bold">Title</FormLabel>
@@ -108,6 +148,18 @@ const AboutUs = () => {
               }}
               border="1px solid"
               borderColor="gray.300"
+              p={2}
+            />
+          </FormControl>
+
+          {/* Image Upload */}
+          <FormControl mb={4}>
+            <FormLabel fontWeight="bold">Upload Image</FormLabel>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleFileChange(e, index, "image")}
+              height={12}
               p={2}
             />
           </FormControl>
@@ -159,13 +211,25 @@ const AboutUs = () => {
                     p={2}
                   />
                 </FormControl>
+
+                {/* Upload Icon */}
+                <FormControl mb={2}>
+                  <FormLabel fontWeight="bold">Upload Icon</FormLabel>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileChange(e, index, "icon")} // Handle icon upload
+                    height={12}
+                    p={2}
+                  />
+                </FormControl>
               </GridItem>
             ))}
           </Grid>
 
           <Divider my={4} />
 
-          <Button onClick={() => handleUpdate(index)} colorScheme="teal" isFullWidth>
+          <Button onClick={() => handleUpdate(index)} colorScheme="teal" isFullWidth isLoading={uploadImageLoading}>
             Update
           </Button>
         </Box>
