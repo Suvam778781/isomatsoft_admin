@@ -16,7 +16,7 @@ import {
 import { fetchGetRequest, sendPostRequest } from "../api/api";
 
 const HeaderSection = () => {
-  const [headerData, setHeaderData] = useState(null);
+  const [headerData, setHeaderData] = useState({ links: [] });
   const [loading, setLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
   const toast = useToast();
@@ -72,6 +72,13 @@ const HeaderSection = () => {
     } finally {
       setUploadLoading(false);
     }
+  };
+
+  const handleAddLink = () => {
+    setHeaderData((prevState) => ({
+      ...prevState,
+      links: [...prevState.links, { name: "", link: "", button_text: "" }]
+    }));
   };
 
   const handleUpdate = async () => {
@@ -203,6 +210,9 @@ const HeaderSection = () => {
           </GridItem>
         ))}
       </Grid>
+      <Button onClick={handleAddLink} colorScheme="blue" mt={4} mb={4}>
+        Add New Link
+      </Button>
       <Divider my={4} />
       <Button onClick={handleUpdate} colorScheme="teal" isFullWidth isLoading={uploadLoading}>
         Update Header

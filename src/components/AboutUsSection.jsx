@@ -8,7 +8,6 @@ import {
   FormControl,
   FormLabel,
   Text,
-  Stack,
   Grid,
   GridItem,
   Divider,
@@ -104,6 +103,18 @@ const AboutUs = () => {
     }
   };
 
+  // Function to add new card
+  const addNewCard = (index) => {
+    const newCard = {
+      title: "",
+      description: "",
+      icon: "",
+    };
+    const newData = [...aboutData];
+    newData[index].card_details.push(newCard);
+    setAboutData(newData);
+  };
+
   if (loading) {
     return (
       <Flex justify="center" align="center" height="300px">
@@ -112,14 +123,24 @@ const AboutUs = () => {
     );
   }
 
+
+  const handleDelete = async (data) => {
+    if (window.confirm("Are you sure you want to delete this item?")) {
+      const filteredData=aboutData[0].card_details.filter((item)=>item._id !== data._id)
+      console.log(filteredData, "aboutData")
+      setAboutData([{...aboutData[0],card_details: filteredData}]);
+      }
+  }
+
+
   return (
     <Box maxW="1200px" mx="auto" py={8} px={4} bg="gray.50" borderRadius="lg">
       <Text fontSize="3xl" fontWeight="bold" mb={8} textAlign="center">
         About Us Management
       </Text>
 
-      {aboutData&&aboutData.map((about, index) => (
-        <Box key={about._id.$oid} mb={6} p={4} bg="white" borderRadius="md">
+      {aboutData.map((about, index) => (
+        <Box key={about._id} mb={6} p={4} bg="white" borderRadius="md">
           {/* Title */}
           <FormControl mb={4}>
             <FormLabel fontWeight="bold">Title</FormLabel>
@@ -168,7 +189,16 @@ const AboutUs = () => {
           <Text fontSize="2xl" fontWeight="bold" mb={4}>Card Details</Text>
           <Grid templateColumns="repeat(3, 1fr)" gap={6}>
             {about.card_details.map((card, cardIndex) => (
-              <GridItem key={card._id.$oid} bg="white" borderRadius="md" shadow="md" p={4}>
+              <GridItem key={card._id} bg="white" borderRadius="md" shadow="md" p={4}>
+                 <Button
+                onClick={() => handleDelete(card)}
+                colorScheme="red"
+                isFullWidth
+                mt={2}
+              
+              >
+              Delete
+              </Button>
                 <FormControl mb={2}>
                   <FormLabel fontWeight="bold">Card Title</FormLabel>
                   <Input
@@ -218,7 +248,7 @@ const AboutUs = () => {
                   <Input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => handleFileChange(e, index, "icon")} // Handle icon upload
+                    onChange={(e) => handleFileChange(e, index, "icon")}
                     height={12}
                     p={2}
                   />
@@ -226,6 +256,10 @@ const AboutUs = () => {
               </GridItem>
             ))}
           </Grid>
+
+          <Button onClick={() => addNewCard(index)} colorScheme="blue" mt={4}>
+            Add New Card
+          </Button>
 
           <Divider my={4} />
 

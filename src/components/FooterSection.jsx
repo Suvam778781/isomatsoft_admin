@@ -20,6 +20,8 @@ const FooterSection = () => {
   const [loading, setLoading] = useState(true);
   const [uploadImageLoading, setUploadImageLoading] = useState(false);
   const toast = useToast();
+  const [newSocial, setNewSocial] = useState({ link: "", icon: "" });
+  const [newLink, setNewLink] = useState({ name: "", link: "", icon: "" });
 
   useEffect(() => {
     fetchFooterData();
@@ -47,13 +49,14 @@ const FooterSection = () => {
         section: "footer",
         data: footerData,
       };
-      await sendPostRequest(`${import.meta.env.VITE_API_URL}/api/updateData/${footerData._id.$oid}`, updatedData);
+      await sendPostRequest(`${import.meta.env.VITE_API_URL}/api/updateData`, updatedData);
       toast({
         title: "Footer Section updated successfully",
         status: "success",
         duration: 2000,
         isClosable: true,
       });
+      fetchFooterData()
     } catch (error) {
       toast({
         title: "Error updating Footer Section data",
@@ -100,6 +103,32 @@ const FooterSection = () => {
     if (file) {
       handleImageUpload(file, index, type);
     }
+  };
+
+  const deleteSocialMedia = (index) => {
+    const newSocialMedia = footerData.social_media.filter((_, i) => i !== index);
+    setFooterData({ ...footerData, social_media: newSocialMedia });
+  };
+
+  const deleteFooterLink = (index) => {
+    const newLinks = footerData.links.filter((_, i) => i !== index);
+    setFooterData({ ...footerData, links: newLinks });
+  };
+
+  const addSocialMedia = () => {
+    setFooterData((prev) => ({
+      ...prev,
+      social_media: [...prev.social_media, newSocial],
+    }));
+    setNewSocial({ link: "", icon: "" });
+  };
+
+  const addFooterLink = () => {
+    setFooterData((prev) => ({
+      ...prev,
+      links: [...prev.links, newLink],
+    }));
+    setNewLink({ name: "", link: "", icon: "" });
   };
 
   if (loading) {
@@ -165,9 +194,30 @@ const FooterSection = () => {
                 onChange={(e) => handleFileChange(e, index, "social")}
               />
             </FormControl>
+            <Button onClick={() => deleteSocialMedia(index)} colorScheme="red" mt={2}>
+              Delete
+            </Button>
           </GridItem>
         ))}
       </Grid>
+      
+      {/* New Social Media Link Input */}
+      <Box mb={4} mt={4} p={4} bg="white" borderRadius="md">
+        <Text fontSize="xl" fontWeight="bold" mb={2}>Add New Social Media Link</Text>
+        <FormControl mb={2}>
+          <FormLabel fontWeight="bold">Link</FormLabel>
+          <Input
+            value={newSocial.link}
+            onChange={(e) => setNewSocial({ ...newSocial, link: e.target.value })}
+            border="1px solid"
+            borderColor="gray.300"
+            p={2}
+          />
+        </FormControl>
+        <Button onClick={addSocialMedia} colorScheme="teal">
+          Add Social Media
+        </Button>
+      </Box>
 
       <Divider my={4} />
 
@@ -219,12 +269,45 @@ const FooterSection = () => {
               <Input
                 type="file"
                 accept="image/*"
+                height={12}
+                p={2}
                 onChange={(e) => handleFileChange(e, index, "link")}
               />
             </FormControl>
+            <Button onClick={() => deleteFooterLink(index)} colorScheme="red" mt={2}>
+              Delete
+            </Button>
           </GridItem>
         ))}
       </Grid>
+
+      {/* New Footer Link Input */}
+      <Box mb={4} mt={4} p={4} bg="white" borderRadius="md">
+        <Text fontSize="xl" fontWeight="bold" mb={2}>Add New Footer Link</Text>
+        <FormControl mb={2}>
+          <FormLabel fontWeight="bold">Link Name</FormLabel>
+          <Input
+            value={newLink.name}
+            onChange={(e) => setNewLink({ ...newLink, name: e.target.value })}
+            border="1px solid"
+            borderColor="gray.300"
+            p={2}
+          />
+        </FormControl>
+        <FormControl mb={2}>
+          <FormLabel fontWeight="bold">Link URL</FormLabel>
+          <Input
+            value={newLink.link}
+            onChange={(e) => setNewLink({ ...newLink, link: e.target.value })}
+            border="1px solid"
+            borderColor="gray.300"
+            p={2}
+          />
+        </FormControl>
+        <Button onClick={addFooterLink} colorScheme="teal">
+          Add Footer Link
+        </Button>
+      </Box>
 
       <Divider my={4} />
 
