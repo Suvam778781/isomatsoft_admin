@@ -19,6 +19,7 @@ const AboutUs = () => {
   const [aboutData, setAboutData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploadImageLoading, setUploadImageLoading] = useState(false);
+  const [providers, setProviders] = useState([]);
   const toast = useToast();
 
   useEffect(() => {
@@ -27,8 +28,11 @@ const AboutUs = () => {
 
   const fetchAboutData = async () => {
     try {
-      const response = await fetchGetRequest(`${import.meta.env.VITE_API_URL}/api/getData?section=aboutus`);
-      setAboutData(response.data);
+      const response = await fetchGetRequest(
+        `${import.meta.env.VITE_API_URL}/api/getData?section=aboutus`
+      );
+      setAboutData(response?.data);
+      setProviders(response?.data[0].providers);
       setLoading(false);
     } catch (error) {
       toast({
@@ -47,7 +51,10 @@ const AboutUs = () => {
         section: "aboutus",
         data: aboutData[index],
       };
-      await sendPostRequest(`${import.meta.env.VITE_API_URL}/api/updateData`, updatedData);
+      await sendPostRequest(
+        `${import.meta.env.VITE_API_URL}/api/updateData`,
+        updatedData
+      );
       toast({
         title: "About Us updated successfully",
         status: "success",
@@ -69,7 +76,10 @@ const AboutUs = () => {
     const formData = new FormData();
     formData.append("post_img", file);
     try {
-      const response = await sendPostRequest(`${import.meta.env.VITE_API_URL}/api/get-image-url`, formData);
+      const response = await sendPostRequest(
+        `${import.meta.env.VITE_API_URL}/api/get-image-url`,
+        formData
+      );
       if (response.url) {
         toast({
           title: "Image uploaded successfully",
@@ -78,9 +88,14 @@ const AboutUs = () => {
           isClosable: true,
         });
         const newData = [...aboutData];
-        if (type === "logo") newData[index].logo = response.url;
-        else if (type === "icon") newData[index].icon = response.url; // Update for icon URL
-
+        if (type === "logo"){ newData[index].logo = response.url;}
+        else if (type === "icon"){
+          newData[index].icon = response.url; // Update for icon URL
+        }
+        else if (type = "provider"){
+         newData[index].providers = [newData[index].providers, response.url];
+         setProviders((prev)=>[...prev, response.url])
+        }
         setAboutData(newData);
         await handleUpdate(index); // Update the data after setting the image URL
       }
@@ -123,15 +138,41 @@ const AboutUs = () => {
     );
   }
 
-
   const handleDelete = async (data) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
-      const filteredData=aboutData[0].card_details.filter((item)=>item._id !== data._id)
-      console.log(filteredData, "aboutData")
-      setAboutData([{...aboutData[0],card_details: filteredData}]);
-      }
-  }
+      const filteredData = aboutData[0].card_details.filter(
+        (item) => item._id !== data._id
+      );
+      console.log(filteredData, "aboutData");
+      setAboutData([{ ...aboutData[0], card_details: filteredData }]);
+    }
+  };
 
+  // Function to delete a provider image
+  const handleDeleteProvider = (providerUrl) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this provider image?"
+    );
+    if (confirmDelete) {
+      const updatedProviders = providers.filter(
+        (provider) => provider !== providerUrl
+      );
+      setProviders(updatedProviders);
+
+      // Optionally, update the backend
+      const updatedAboutData = [...aboutData];
+      updatedAboutData[0].providers = updatedProviders;
+      setAboutData(updatedAboutData);
+
+      toast({
+        title: "Provider image deleted",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
+    }
+  };
+  
 
   return (
     <Box maxW="1200px" mx="auto" py={8} px={4} bg="gray.50" borderRadius="lg">
@@ -186,26 +227,34 @@ const AboutUs = () => {
           </FormControl>
 
           {/* Card Details */}
-          <Text fontSize="2xl" fontWeight="bold" mb={4}>Card Details</Text>
+          <Text fontSize="2xl" fontWeight="bold" mb={4}>
+            Card Details
+          </Text>
           <Grid templateColumns="repeat(3, 1fr)" gap={6}>
             {about.card_details.map((card, cardIndex) => (
-              <GridItem key={card._id} bg="white" borderRadius="md" shadow="md" p={4}>
-                 <Button
-                onClick={() => handleDelete(card)}
-                colorScheme="red"
-                isFullWidth
-                mt={2}
-              
+              <GridItem
+                key={card._id}
+                bg="white"
+                borderRadius="md"
+                shadow="md"
+                p={4}
               >
-              Delete
-              </Button>
+                <Button
+                  onClick={() => handleDelete(card)}
+                  colorScheme="red"
+                  isFullWidth
+                  mt={2}
+                >
+                  Delete
+                </Button>
                 <FormControl mb={2}>
                   <FormLabel fontWeight="bold">Card Title</FormLabel>
                   <Input
                     value={card.title}
                     onChange={(e) => {
                       const newCardData = [...aboutData];
-                      newCardData[index].card_details[cardIndex].title = e.target.value;
+                      newCardData[index].card_details[cardIndex].title =
+                        e.target.value;
                       setAboutData(newCardData);
                     }}
                     border="1px solid"
@@ -219,7 +268,8 @@ const AboutUs = () => {
                     value={card.description}
                     onChange={(e) => {
                       const newCardData = [...aboutData];
-                      newCardData[index].card_details[cardIndex].description = e.target.value;
+                      newCardData[index].card_details[cardIndex].description =
+                        e.target.value;
                       setAboutData(newCardData);
                     }}
                     border="1px solid"
@@ -233,7 +283,8 @@ const AboutUs = () => {
                     value={card.icon}
                     onChange={(e) => {
                       const newCardData = [...aboutData];
-                      newCardData[index].card_details[cardIndex].icon = e.target.value;
+                      newCardData[index].card_details[cardIndex].icon =
+                        e.target.value;
                       setAboutData(newCardData);
                     }}
                     border="1px solid"
@@ -261,9 +312,64 @@ const AboutUs = () => {
             Add New Card
           </Button>
 
+          <FormControl mb={4}>
+<FormLabel fontWeight="bold">Upload New Provider Image</FormLabel>
+<Input
+  type="file"
+  accept="image/*"
+  onChange={(e) => handleFileChange(e, index, "provider")}
+  height={12}
+  p={2}
+/>
+</FormControl>
+
+{/* Providers Grid */}
+<Text fontSize="2xl" fontWeight="bold" mb={4}>
+Provider Images
+</Text>
+<Grid templateColumns="repeat(auto-fill, minmax(160px, 1fr))" gap={6}>
+{providers &&
+  providers.length > 0 &&
+  providers.map((provider, providerIndex) => (
+    <GridItem
+      key={providerIndex}
+      bg="white"
+      borderRadius="md"
+      shadow="md"
+      p={4}
+      position="relative"
+    >
+      <img
+        src={provider}
+        alt="Provider"
+        style={{
+          width: "140px",
+          height: "60px",
+          borderRadius: "8px",
+        }}
+      />
+      <Button
+        onClick={() => handleDeleteProvider(provider)}
+        colorScheme="red"
+        size="xs"
+        position="absolute"
+        top="8px"
+        right="8px"
+        p={0}
+      >
+        X
+      </Button>
+    </GridItem>
+  ))}
+</Grid>
           <Divider my={4} />
 
-          <Button onClick={() => handleUpdate(index)} colorScheme="teal" isFullWidth isLoading={uploadImageLoading}>
+          <Button
+            onClick={() => handleUpdate(index)}
+            colorScheme="teal"
+            isFullWidth
+            isLoading={uploadImageLoading}
+          >
             Update
           </Button>
         </Box>
@@ -273,3 +379,4 @@ const AboutUs = () => {
 };
 
 export default AboutUs;
+
