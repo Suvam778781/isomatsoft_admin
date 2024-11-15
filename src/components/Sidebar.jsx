@@ -14,6 +14,8 @@ import {
   IconButton,
 } from '@chakra-ui/react';
 import { FaHome, FaStar, FaImages, FaInfoCircle, FaCog, FaSignInAlt, FaSignOutAlt } from 'react-icons/fa';
+import { FaUsersLine } from "react-icons/fa6";
+
 import { GiHamburgerMenu } from 'react-icons/gi';
 import { useNavigate } from 'react-router-dom';
 
@@ -61,6 +63,10 @@ const Sidebar = () => {
               <Link display="flex" alignItems="center" p={2} borderRadius="md" _hover={{ bg: 'gray.100' }} href="/">
                 <Icon as={FaInfoCircle} w={5} h={5} />
                 <Text ml={2}>About Us</Text>
+              </Link>
+              <Link display="flex" alignItems="center" p={2} borderRadius="md" _hover={{ bg: 'gray.100' }} href="/clients">
+                <Icon as={FaUsersLine} w={5} h={5} />
+                <Text ml={2}>All Clients</Text>
               </Link>
               <Link display="flex" alignItems="center" p={2} borderRadius="md" _hover={{ bg: 'gray.100' }} href="/footer">
                 <Icon as={FaCog} w={5} h={5} />

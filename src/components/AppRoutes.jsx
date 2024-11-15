@@ -9,6 +9,7 @@ import HeaderSection from './HeaderSection';
 import Carousel from './CarouselSection';
 import Login from './Login';
 import PrivateRoute from './PrivateRoute';
+import ClientList from './ClientList';
 const AppRoutes = () => {
   return (
  
@@ -18,6 +19,7 @@ const AppRoutes = () => {
         <Route path="/footer" element={<PrivateRoute><FooterSection /></PrivateRoute>} />
         <Route path="/header" element={<PrivateRoute><HeaderSection /></PrivateRoute>} />
         <Route path="/carousel" element={<PrivateRoute><Carousel /></PrivateRoute>} />
+        <Route path="/clients" element={<PrivateRoute><ClientList /></PrivateRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound/>} />
       </Routes>
