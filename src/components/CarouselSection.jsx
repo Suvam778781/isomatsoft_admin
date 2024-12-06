@@ -170,6 +170,17 @@ const Carousel = () => {
             />
           </FormControl>
           <FormControl mb={4}>
+            <FormLabel fontWeight="bold">Priority</FormLabel>
+            <Input
+              value={newItem.priority}
+              onChange={(e) => setNewItem({ ...newItem, priority: e.target.value })}
+              border="1px solid"
+              type="number"
+              borderColor="gray.300"
+              p={2}
+            />
+          </FormControl>
+          <FormControl mb={4}>
             <FormLabel fontWeight="bold">Link</FormLabel>
             <Input
               placeholder="Link URL"
@@ -188,6 +199,7 @@ const Carousel = () => {
               borderColor="gray.300"
               p={2}
             />
+
           </FormControl>
           <FormControl mb={4}>
             <FormLabel fontWeight="bold">Additional Image</FormLabel>
@@ -251,6 +263,21 @@ const Carousel = () => {
                     setCarouselData(newData);
                   }}
                   border="1px solid"
+                  borderColor="gray.300"
+                  p={2}
+                />
+              </FormControl>
+              <FormControl mb={4}>
+                <FormLabel fontWeight="bold">Priority</FormLabel>
+                <Input
+                  value={item?.priority}
+                  onChange={(e) => {
+                    const newData = [...carouselData];
+                    newData[index].priority = e.target.value;
+                    setCarouselData(newData);
+                  }}
+                  border="1px solid"
+                  type="number"
                   borderColor="gray.300"
                   p={2}
                 />
